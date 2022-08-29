@@ -7,7 +7,7 @@ import torch
 from torch import nn, einsum
 
 from einops import rearrange
-from models.layers import DropPath
+from layers import DropPath
 
 
 class FeedForward(nn.Module):
