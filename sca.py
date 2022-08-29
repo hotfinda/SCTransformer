@@ -1,3 +1,5 @@
+#implemetation of sca block,code is based on https://github.com/xxxnell/how-do-vits-work
+
 import numpy as np
 import torch
 import torch.nn as nn
