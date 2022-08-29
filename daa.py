@@ -4,23 +4,16 @@ import torch.nn as nn
 
 import models.layers as layers
 import models.resnet_dnn_block as resnet_dnn
-import models.resnet_mcdo_block as resnet_mcdo
 import models.preresnet_dnn_block as preresnet_dnn
-import models.preresnet_mcdo_block as preresnet_mcdo
 import models.classifier_block as classifier
 
 from functools import partial
 from itertools import cycle
 from einops import rearrange
 from models.layers import conv1x1, DropPath
-from models.attentions import Attention3d
 from models.attentions import Attention2d
-from models.attentions import Attention4d
-from models.attentions import Attention5d
 from models.attentions import Attention6d
-from models.attentions import Attention7d
-from models.attentions import Attention8d
-from models.attentions import Attention9d
+
 class LocalAttention(nn.Module):
 
     def __init__(self, dim_in, dim_out=None, *,
@@ -281,7 +274,7 @@ class StemB(nn.Module):
 
 # Model
 
-class AlterNet(nn.Module):
+class ResNet(nn.Module):
 
     def __init__(self, block1, block2, block3, *,
                  num_blocks, num_blocks2, heads,
@@ -314,7 +307,7 @@ class AlterNet(nn.Module):
     def _make_layer(block1, block2, block3, in_channels, out_channels, num_block1, num_block2, stride, heads, sds, **block_kwargs):
         alt_seq = [False] * (num_block1 - num_block2 * 2) + [False, True] * num_block2
         stride_seq = [stride] + [1] * (num_block1 - 1)
-        #对于alt_seq，约定使用conv为0，使用MSA为1，使用DILA为2
+        #使用conv为0，使用MSA为1，使用SCA为2
         
         if num_block2==0:
             alt_seq = [0, 0, 0]
@@ -352,30 +345,30 @@ class AlterNet(nn.Module):
 
 
 def dnn_18(num_classes=1000, stem=True, name="alternet_18", **block_kwargs):
-    return AlterNet(preresnet_dnn.BasicBlock, AttentionBasicBlockB, stem=partial(StemB, pool=stem),
+    return ResNet(preresnet_dnn.BasicBlock, AttentionBasicBlockB,AttentionBlockBD, stem=partial(StemB, pool=stem),
                     num_blocks=(2, 2, 2, 2), num_blocks2=(0, 1, 1, 1), heads=(3, 6, 12, 24),
                     num_classes=num_classes, name=name, **block_kwargs)
 
 
 def dnn_34(num_classes=1000, stem=True, name="alternet_34", **block_kwargs):
-    return AlterNet(preresnet_dnn.BasicBlock, AttentionBasicBlockB, stem=partial(StemB, pool=stem),
+    return ResNet(preresnet_dnn.BasicBlock, AttentionBasicBlockB, AttentionBlockBD,stem=partial(StemB, pool=stem),
                     num_blocks=(3, 4, 6, 4), num_blocks2=(0, 1, 3, 2), heads=(3, 6, 12, 24),
                     num_classes=num_classes, name=name, **block_kwargs)
 
 
 def dnn_50(num_classes=1000, stem=True, name="alternet_50", **block_kwargs):
-    return AlterNet(preresnet_dnn.Bottleneck, AttentionBlockB, AttentionBlockBD,stem=partial(StemB, pool=stem),
+    return ResNet(preresnet_dnn.Bottleneck, AttentionBlockB, AttentionBlockBD,stem=partial(StemB, pool=stem),
                     num_blocks=(3, 4, 6, 4), num_blocks2=(0, 1, 3, 2), heads=(3, 6, 12, 24),
                     num_classes=num_classes, name=name, **block_kwargs)
 
 
 def dnn_101(num_classes=1000, stem=True, name="alternet_101", **block_kwargs):
-    return AlterNet(preresnet_dnn.Bottleneck, AttentionBlockB, stem=partial(StemB, pool=stem),
+    return ResNet(preresnet_dnn.Bottleneck, AttentionBlockB, AttentionBlockBD,stem=partial(StemB, pool=stem),
                     num_blocks=(3, 4, 23, 4), num_blocks2=(0, 1, 3, 2), heads=(3, 6, 12, 24),
                     num_classes=num_classes, name=name, **block_kwargs)
 
 
 def dnn_152(num_classes=1000, stem=True, name="alternet_152", **block_kwargs):
-    return AlterNet(preresnet_dnn.Bottleneck, AttentionBlockB, stem=partial(StemB, pool=stem),
+    return ResNet(preresnet_dnn.Bottleneck, AttentionBlockB, AttentionBlockBD,stem=partial(StemB, pool=stem),
                     num_blocks=(3, 8, 36, 4), num_blocks2=(0, 1, 3, 2), heads=(3, 6, 12, 24),
                     num_classes=num_classes, name=name, **block_kwargs)
