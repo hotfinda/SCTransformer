@@ -314,7 +314,7 @@ class ResNet(nn.Module):
         if num_block2==0:
             alt_seq = [0, 0, 0]
         if num_block2==1:
-            alt_seq = [0, 2, 2, 2]    
+            alt_seq = [0, 0, 0, 0]    
         if num_block2==3:
             alt_seq = [0,2,2,2,2,2]
         if num_block2==2:  
